@@ -30,6 +30,9 @@ export class User {
   @Column()
   password: string;
 
+  @Column()
+  photo: string;
+
   @Column({
     type: 'enum',
     enum: ['agent', 'admin', 'user'],
