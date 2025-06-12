@@ -33,6 +33,12 @@ export class User {
   @Column()
   photo: string;
 
+  @Column({ nullable: true })
+  resetToken: string | null;
+
+  @Column({ nullable: true })
+  tokenExpires: Date | null;
+
   @Column({
     type: 'enum',
     enum: ['agent', 'admin', 'user'],
