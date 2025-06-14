@@ -1,5 +1,13 @@
 // src/users/entities/profile.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToOne,
+} from 'typeorm';
+import { User } from './user.entity';
 
 @Entity()
 export class Profile {
@@ -30,6 +38,9 @@ export class Profile {
     default: 'pending',
   })
   kycStatus: 'pending' | 'verified' | 'rejected';
+
+  @OneToOne(() => User, (user) => user.profile)
+  user: User;
 
   @Column({ nullable: true })
   rejectionReason: string; // Optional reason if rejected

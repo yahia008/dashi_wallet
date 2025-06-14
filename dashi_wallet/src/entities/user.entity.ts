@@ -7,8 +7,11 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToMany,
+  OneToMany,
 } from 'typeorm';
 import { Profile } from 'src/entities/profile.entity';
+import { Group } from './group.entity';
 
 @Entity()
 export class User {
@@ -50,7 +53,13 @@ export class User {
   isVerified: boolean;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
-  balance: number;
+  blance: number;
+
+  @OneToMany(() => Group, (group) => group.createdBy)
+  createdGroups: Group[];
+
+  @ManyToMany(() => Group, (group) => group.members)
+  joinedGroups: Group[];
 
   @OneToOne(() => Profile, { cascade: true, eager: true, nullable: true })
   @JoinColumn()
@@ -61,4 +70,5 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
+  
 }
