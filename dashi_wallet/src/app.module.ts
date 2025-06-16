@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { GroupModule } from './group/group.module';
+import { ContributionModule } from './contribution/contribution.module';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -17,7 +18,7 @@ import { GroupModule } from './group/group.module';
     },
     autoLoadEntities: true,
     synchronize: true,
-  }), AuthModule, GroupModule],
+  }), AuthModule, GroupModule, ContributionModule],
   controllers: [AppController],
   providers: [AppService],
 })

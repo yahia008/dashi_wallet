@@ -45,6 +45,15 @@ export class Group {
   @Column({ default: 'active' })
   status: 'active' | 'completed' | 'cancelled';
 
+  @Column()
+  inviteToken: string | null;
+
+  @Column({ default: 0 })
+  maxMembers: number;
+
+  @Column({ nullable: true })
+  inviteExpiresAt: Date | null;
+
   @ManyToMany(() => User)
   @JoinTable()
   members: User[];

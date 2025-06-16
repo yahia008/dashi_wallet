@@ -6,6 +6,7 @@ import {
   IsDateString,
   IsOptional,
   Min,
+  IsInt,
 } from 'class-validator';
 
 export class CreateGroupDto {
@@ -25,6 +26,10 @@ export class CreateGroupDto {
   @IsNotEmpty()
   @IsEnum(['daily', 'weekly', 'monthly'])
   frequency: 'daily' | 'weekly' | 'monthly';
+
+  @IsInt()
+  @Min(1, { message: 'maxMembers must be at least 1' })
+  maxMembers: number;
 
   @IsNotEmpty()
   @IsDateString()
