@@ -12,6 +12,8 @@ import {
 } from 'typeorm';
 import { Profile } from 'src/entities/profile.entity';
 import { Group } from './group.entity';
+import { Transaction } from './transaction.entity';
+import { Contribution } from './contribution.entitz';
 
 @Entity()
 export class User {
@@ -64,11 +66,15 @@ export class User {
   @OneToOne(() => Profile, { cascade: true, eager: true, nullable: true })
   @JoinColumn()
   profile: Profile;
+  @OneToMany(() => Transaction, (transaction) => transaction.user)
+  transactions: Transaction[];
+
+  @OneToMany(() => Contribution, (contribution) => contribution.user)
+  contributions: Contribution[];
 
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
-  
 }

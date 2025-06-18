@@ -5,10 +5,12 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from './user.entity';
+import { Contribution } from './contribution.entitz';
 
 @Entity()
 export class Group {
@@ -57,6 +59,9 @@ export class Group {
   @ManyToMany(() => User)
   @JoinTable()
   members: User[];
+
+  @OneToMany(() => Contribution, (contribution) => contribution.group)
+  contributions: Contribution[];
 
   @CreateDateColumn()
   createdAt: Date;
