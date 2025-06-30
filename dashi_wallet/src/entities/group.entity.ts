@@ -32,11 +32,11 @@ export class Group {
   @Column()
   frequency: 'daily' | 'weekly' | 'monthly';
 
-  @Column()
-  startDate: Date;
+  @Column({ type: 'timestamp' })
+startDate: Date;
 
-  @Column()
-  endDate: Date;
+@Column({ type: 'timestamp' })
+endDate: Date;
 
   @Column({ default: 0 })
   currentCycle: number;
@@ -47,14 +47,19 @@ export class Group {
   @Column({ default: 'active' })
   status: 'active' | 'completed' | 'cancelled';
 
-  @Column()
-  inviteToken: string | null;
+ @Column({ type: 'text', nullable: true })
+inviteToken: string | null;
 
   @Column({ default: 0 })
   maxMembers: number;
 
-  @Column({ nullable: true })
+  @Column({ default: 0 })
+  totalcycle: number;
+
+
+  @Column({ type: 'timestamp', nullable: true })
   inviteExpiresAt: Date | null;
+
 
   @ManyToMany(() => User)
   @JoinTable()

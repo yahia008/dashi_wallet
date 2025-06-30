@@ -8,6 +8,11 @@ export class signUp {
   lastName: string;
 
   @IsNotEmpty()
+  phone:string
+
+
+
+  @IsNotEmpty()
   @IsEmail()
   email: string;
 
@@ -17,4 +22,14 @@ export class signUp {
     message: 'Password too weak',
   })
   password: string;
+
+  @IsNotEmpty()
+photo:string
+  
+}
+
+export class forgotDto{
+  @IsNotEmpty()
+  @IsEmail()
+  email:string
 }

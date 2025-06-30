@@ -4,10 +4,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import Flutterwave from 'flutterwave-node-v3';
+import * as Flutterwave from 'flutterwave-node-v3';
 import { User } from 'src/entities/user.entity';
 import { Repository } from 'typeorm';
 import { Transaction } from 'src/entities/transaction.entity';
+const Flutterwave = require('flutterwave-node-v3');
 
 @Injectable()
 export class PaymentsService {
@@ -18,8 +19,8 @@ export class PaymentsService {
     @InjectRepository(Transaction) private TxRepo: Repository<Transaction>,
   ) {
     this.flw = new Flutterwave(
-      process.env.FLW_PUBLIC_KEY,
-      process.env.FLW_SECRET_KEY,
+      process.env.FLWPUBK,
+      process.env.FLWSECK,
     );
   }
 
@@ -32,21 +33,14 @@ export class PaymentsService {
     const payload = {
       tx_ref,
       amount,
+      email,
       currency: 'NGN',
       redirect_url,
-      payment_options: 'card,banktransfer',
-      customer: {
-        email,
-      },
-      customizations: {
-        title: 'Dashi Wallet Deposit',
-        description: 'Deposit into wallet',
-      },
     };
 
     try {
-      const response = await this.flw.PaymentInitiate(payload);
-      return response.data; // contains link
+      const response = await this.flw.Charge.bank_transfer(payload);
+      return response // contains link
     } catch (error) {
       throw new Error(error.message || 'Flutterwave error');
     }
@@ -62,14 +56,13 @@ export class PaymentsService {
   }
   async transaction(
     amount: number,
-    type: 'deposit',
     ref: string,
-    status: 'successful',
     email: string,
-    user: User,
+    transactionId:string,
+    
   ) {
     try {
-      const user = await this.userRepo.findOneBy({ email });
+       const user = await this.userRepo.findOneBy({ email });
       if (!user) throw new NotFoundException('User not found');
 
       user.blance += amount;
@@ -77,10 +70,11 @@ export class PaymentsService {
       await this.userRepo.save(user);
       const newtransaction = this.TxRepo.create({
         amount,
-        type,
+        type: 'deposit',
         ref,
-        status,
+        status: 'successful',
         email,
+        transactionId,
         user,
       });
 

@@ -39,7 +39,7 @@ export class Profile {
   })
   kycStatus: 'pending' | 'verified' | 'rejected';
 
-  @OneToOne(() => User, (user) => user.profile)
+  @OneToOne(() => User, (user) => user.profile, {nullable:true})
   user: User;
 
   @Column({ nullable: true })

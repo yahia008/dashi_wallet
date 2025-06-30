@@ -30,7 +30,8 @@ export class GroupService {
         ...createGroupDto,
         createdBy: user, // Associate the group with the creator (agent)
         currentCycle: 0, // Initialize cycle
-        status: 'active', // Set default status
+        status: 'active', 
+        totalcycle:createGroupDto.maxMembers// Set default status
       });
 
       const savedGroup = await this.groupRepo.save(newGroup);

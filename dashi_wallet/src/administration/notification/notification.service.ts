@@ -1,0 +1,49 @@
+import { Injectable } from '@nestjs/common';
+import * as nodemailer from 'nodemailer';
+
+
+@Injectable()
+export class NotificationService {
+    private transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port:587,
+    secure:false, // Or use SMTP config
+    auth: {
+      user: 'yahyatijjani99@gmail.com',
+      pass: 'eqbjddidjamzstpu', // Gmail app password or SMTP password
+    },
+  });
+
+  async sendMail(to: string, subject: string, text: string, html?: string) {
+    const info = await this.transporter.sendMail({
+      from: 'dashi_wallet',
+      to,
+      subject,
+      text,
+      html,
+    });
+
+    console.log('Message sent: %s', info.messageId)
+    return info;
+  }
+
+  async sendResetEmail(email:string, resetLink:string){
+      try{
+        await this.transporter.sendMail({
+      from: `"dashi_waller"`,
+      to: email,
+      subject: 'Reset Your Password',
+      html: `
+        <p>Hello,</p>
+        <p>You requested a password reset. Click the link below to set a new password. This link will expire in 15 minutes:</p>
+        <p><a href="${resetLink}">Reset Password</a></p>
+        <p>If you didn’t request this, you can safely ignore this email.</p>
+        <br>
+        <p>– YourApp Team</p>
+      `,
+        })
+      }catch(error){
+        throw error
+      }
+    }
+}

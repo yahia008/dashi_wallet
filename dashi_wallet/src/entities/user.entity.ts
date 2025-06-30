@@ -38,11 +38,11 @@ export class User {
   @Column()
   photo: string;
 
-  @Column({ nullable: true })
-  resetToken: string | null;
+@Column({ type: 'text', nullable: true })
+resetToken: string | null;
 
-  @Column({ nullable: true })
-  tokenExpires: Date | null;
+ @Column({ type: 'timestamp', nullable: true })
+tokenExpires: Date | null;
 
   @Column({
     type: 'enum',

@@ -6,8 +6,6 @@ import { User } from 'src/entities/user.entity';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import * as crypto from 'crypto';
-import { sendResetEmail } from 'src/constants/sendmail';
 
 import {
   BadRequestException,
@@ -22,11 +20,12 @@ export class AuthService {
     @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(Profile) private profileRepo: Repository<Profile>,
     private jwtService: JwtService,
+   
   ) {}
 
   async register(dto: signUp): Promise<User> {
     try {
-      const user = await this.userRepo.findOneBy({ email: dto.email });
+      const user = await this.userRepo.findOne({where:[{ email: dto.email }, {phone:dto.phone}]});
       if (user) throw new BadRequestException('user already exists');
 
       const salt = await bcrypt.genSalt();
@@ -35,17 +34,23 @@ export class AuthService {
       const newUser = await this.userRepo.create({
         ...dto,
         password: hashedPassword,
-        profile: this.profileRepo.create({}),
+        
       });
+     
 
       const savedUser = await this.userRepo.save(newUser);
-      //const { password, ...safeUser } = savedUser;
+
+     
+
+
+           
+      
       return savedUser;
     } catch (error) {
-      // Handle known errors
+      
       if (error instanceof BadRequestException) throw error;
 
-      // Log and throw a generic server error for unknown issues
+      
       console.error('Error during user registration:', error);
       throw new InternalServerErrorException(
         'Something went wrong while registering',
@@ -57,6 +62,9 @@ export class AuthService {
     try {
       const user = await this.userRepo.findOneBy({ email: dto.email });
       if (!user) throw new BadRequestException('User not found');
+
+      const isMatch = await bcrypt.compare(dto.password, user.password);
+    if (!isMatch) throw new BadRequestException('Invalid credentials');
 
       const payload = {
         sub: user.id,
@@ -76,7 +84,7 @@ export class AuthService {
     }
   }
 
-  async forgetPassword(email: string): Promise<string> {
+  async forgetPassword(email: string, resetToken:string,) {
     try {
       const user = await this.userRepo.findOneBy({ email });
 
@@ -85,7 +93,7 @@ export class AuthService {
       }
 
       // Generate a secure token and expiration time
-      const resetToken = crypto.randomBytes(32).toString('hex');
+      
       const hashedToken = await bcrypt.hash(resetToken, 10);
       const tokenExpires = new Date(Date.now() + 15 * 60 * 1000); // expires in 15 mins
 
@@ -95,7 +103,7 @@ export class AuthService {
       await this.userRepo.save(user);
 
       // Send the email
-      await sendResetEmail(user.email, resetToken);
+   
 
       return 'Reset link sent to your email';
     } catch (error) {
@@ -108,8 +116,11 @@ export class AuthService {
   async resetPassword(token: string, newPassword: string): Promise<string> {
     try {
       if (!token) throw new BadRequestException('Token is required');
+       if (!newPassword || typeof newPassword !== 'string') {
+  throw new BadRequestException('A valid password is required');
+}
 
-      const users = await this.userRepo.find(); // can't query hashed token directly
+      const users = await this.userRepo.find(); 
       const user = await Promise.all(
         users.map(async (u) => {
           const match = u.resetToken
@@ -128,7 +139,9 @@ export class AuthService {
       }
 
       // Hash new password
-      const hashed = await bcrypt.hash(newPassword, 10);
+     
+      const salt = await bcrypt.genSalt() 
+      const hashed = await bcrypt.hash(newPassword, salt);
       user.password = hashed;
       user.resetToken = null;
       user.tokenExpires = null;
