@@ -46,5 +46,26 @@ export class ProfileService {
     }
   }
 
-  async kycverification() {}
+  async getPro(userId: number): Promise<{ profile: Profile; balance: number }> {
+    try {
+      const user = await this.userRepo.findOne({
+        where: { id: userId },
+        relations: ['profile'],
+      });
+
+      if (!user || !user.profile) {
+        throw new BadRequestException('Profile not found for this user');
+      }
+
+      return {
+      profile: user.profile,
+      balance: user.blance, // ← make sure your property is spelled correctly
+    };;
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      throw new InternalServerErrorException(
+        error?.message || 'Something went wrong while fetching profile',
+      );
+    }
+  }
 }
