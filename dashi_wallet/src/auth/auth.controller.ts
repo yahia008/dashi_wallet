@@ -70,7 +70,15 @@ export class AuthController {
 
     async profile(@Req() req, @Body() dto:CreateProfileDto){
         return await this.profileservice.createProfile(req.user.sub, dto)
+
             
+    }
+
+    //@UseGuards(AuthGuard)
+    @Get('profile')
+    async getProfile(@Req() req){
+        //const UserId=req.user.sub
+        return 'profile'
     }
 }
 

@@ -60,7 +60,7 @@ export class ProfileService {
       return {
       profile: user.profile,
       balance: user.blance, // ← make sure your property is spelled correctly
-    };;
+    };
     } catch (error) {
       console.error('Error fetching profile:', error);
       throw new InternalServerErrorException(
