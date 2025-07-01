@@ -40,6 +40,10 @@ export class PaymentsService {
 
     try {
       const response = await this.flw.Charge.bank_transfer(payload);
+
+      if(response.status = 'success'){
+        this.transaction(amount, tx_ref=response.transfer_reference, email)
+      }
       return response // contains link
     } catch (error) {
       throw new Error(error.message || 'Flutterwave error');
@@ -54,11 +58,11 @@ export class PaymentsService {
       throw new Error('Verification failed');
     }
   }
-  async transaction(
+  private async transaction(
     amount: number,
     ref: string,
     email: string,
-    transactionId:string,
+  
     
   ) {
     try {
@@ -74,7 +78,7 @@ export class PaymentsService {
         ref,
         status: 'successful',
         email,
-        transactionId,
+
         user,
       });
 
