@@ -3,6 +3,7 @@ import { PaymentsService } from './payments/payments.service';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { v4 as uuidv4 } from 'uuid';
 
+@UseGuards(AuthGuard)
 @Controller('contribution')
 export class ContributionController {
     constructor(
@@ -11,7 +12,7 @@ export class ContributionController {
 
     }
 
-    @UseGuards(AuthGuard)
+   
     @Post('deposit')
 
      async deposit(@Body() body: { amount: number }, @Req() req) {
@@ -33,6 +34,27 @@ export class ContributionController {
     );
 
     return { link: paymentLink }
+  }
+
+    @Post('payment/webhook')
+  async handleWebhook(@Req() req) {
+    const payload = req.body;
+
+    if (
+      payload.event === 'charge.completed' &&
+      payload.data.status === 'successful'
+    ) {
+      const { id: transactionId, tx_ref, amount, customer } = payload.data;
+      const email = customer.email;
+      console.log('🔥 Received webhook from Flutterwave:');
+      console.log(JSON.stringify(req.body, null, 2))
+
+      return await this.paymentService.transaction(amount, tx_ref, email, transactionId)
+
+      
+    }
+
+    return { message: 'Webhook received but ignored' };
   }
 
    @Get('verify')
