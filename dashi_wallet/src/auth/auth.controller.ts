@@ -78,13 +78,14 @@ export class AuthController {
     @Get('profile')
     async getProfile(@Req() req){
         const UserId=req.user.sub
-        return 'profile'
+        return await this.profileservice.getPro(UserId)
     }
 
-     @Get('test')
+@Get('test')
 getTest() {
   return 'Hello from test route!';
 }
+
 }
 
 
