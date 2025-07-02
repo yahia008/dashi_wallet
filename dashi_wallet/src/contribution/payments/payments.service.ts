@@ -41,10 +41,8 @@ export class PaymentsService {
     try {
       const response = await this.flw.Charge.bank_transfer(payload);
 
-      if(response.link.status === 'success'){
-        console.log('transaction successful')
+      
         this.transaction(amount, tx_ref=response.transfer_reference, email)
-      }
       return response // contains link
     } catch (error) {
       throw new Error(error.message || 'Flutterwave error');
