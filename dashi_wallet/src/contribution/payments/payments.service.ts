@@ -42,8 +42,8 @@ export class PaymentsService {
       const response = await this.flw.Charge.bank_transfer(payload);
 
       
-        this.transaction(amount, tx_ref=response.transfer_reference, email)
-      return response // contains link
+   return this.transaction(amount, tx_ref=response.transfer_reference, email)
+  
     } catch (error) {
       throw new Error(error.message || 'Flutterwave error');
     }
@@ -69,6 +69,7 @@ export class PaymentsService {
       user.blance += amount;
 
       await this.userRepo.save(user);
+
       const newtransaction = this.TxRepo.create({
         amount,
         type: 'deposit',
