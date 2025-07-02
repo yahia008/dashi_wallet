@@ -80,6 +80,11 @@ export class AuthController {
         //const UserId=req.user.sub
         return 'profile'
     }
+
+     @Get('test')
+getTest() {
+  return 'Hello from test route!';
+}
 }
 
 
