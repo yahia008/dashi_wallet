@@ -74,10 +74,10 @@ export class AuthController {
             
     }
 
-    //@UseGuards(AuthGuard)
+    @UseGuards(AuthGuard)
     @Get('profile')
     async getProfile(@Req() req){
-        //const UserId=req.user.sub
+        const UserId=req.user.sub
         return 'profile'
     }
 
