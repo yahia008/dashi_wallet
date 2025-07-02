@@ -41,7 +41,7 @@ export class PaymentsService {
     try {
       const response = await this.flw.Charge.bank_transfer(payload);
 
-      if(response.link.status = 'success'){
+      if(response.link.status === 'success'){
         console.log('transaction successful')
         this.transaction(amount, tx_ref=response.transfer_reference, email)
       }
@@ -63,8 +63,6 @@ export class PaymentsService {
     amount: number,
     ref: string,
     email: string,
-  
-    
   ) {
     try {
        const user = await this.userRepo.findOneBy({ email });
