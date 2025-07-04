@@ -46,4 +46,26 @@ export class NotificationService {
         throw error
       }
     }
+
+    async sendInviteEmail(email: string, groupName: string, inviteLink: string) {
+      try {
+        await this.transporter.sendMail({
+          from: '"Dashi Wallet"',
+          to:email,
+          subject: `You are invited to join the group: ${groupName}`,
+          html: `
+            <p>Hello,</p>
+            <p>You have been invited to join the group <strong>${groupName}</strong>.</p>
+            <p>Click the link below to accept the invitation:</p>
+            <p><a href="${inviteLink}">Join Group</a></p>
+            <p>If you did not expect this invitation, you can ignore this email.</p>
+            <br>
+            <p>– Dashi Wallet Team</p>
+          `,
+        })
+      } catch (error) {
+        throw new Error('Failed to send invite email: ' + error.message);
+        
+      }
+    }
 }

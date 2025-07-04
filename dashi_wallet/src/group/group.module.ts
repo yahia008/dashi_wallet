@@ -6,6 +6,8 @@ import { Profile } from 'src/entities/profile.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from 'src/constants/jwt.xonstant';
 import { Group } from 'src/entities/group.entity';
+import { GroupController } from './group.controller';
+import { AdministrationModule } from 'src/administration/administration.module';
 
 @Module({
   imports: [
@@ -15,8 +17,11 @@ import { Group } from 'src/entities/group.entity';
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '60s' },
     }),
+    AdministrationModule
   ],
 
   providers: [GroupService],
+
+  controllers: [GroupController],
 })
 export class GroupModule {}

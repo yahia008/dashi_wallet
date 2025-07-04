@@ -67,7 +67,7 @@ export class AuthService {
     if (!isMatch) throw new BadRequestException('Invalid credentials');
 
       const payload = {
-        sub: user.id,
+        id: user.id,
         email: user.email,
         roles: [user.role],
       };
@@ -153,4 +153,35 @@ export class AuthService {
       throw new BadRequestException(err.message || 'Reset failed');
     }
   }
+
+  async getUserById(id): Promise<User> {
+    try {
+      const user = await this.userRepo.findOneBy({ id });
+      if (!user) throw new NotFoundException('User not found');
+      return user;
+    } catch (error) {
+      console.error('Error fetching user by email:', error);
+      throw new InternalServerErrorException(
+        'Something went wrong while fetching user',
+      );
+    }
+  }
+
+
+async getAllUsers(): Promise<User[]> {
+    try {
+      const users = await this.userRepo.find();
+      if (!users || users.length === 0) {
+        throw new NotFoundException('No users found');
+      }
+      return users;
+    } catch (error) {
+      console.error('Error fetching all users:', error);
+      throw new InternalServerErrorException(
+        'Something went wrong while fetching users',
+      );
+    }
+  }
+
+ 
 }

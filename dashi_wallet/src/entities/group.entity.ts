@@ -23,7 +23,7 @@ export class Group {
   @Column()
   description: string;
 
-  @ManyToOne(() => User, (user) => user.createdGroups)
+  @ManyToOne(() => User, (user) => user.createdGroups, { eager: true })
   createdBy: User; // Must be an agent
 
   @Column('decimal', { precision: 10, scale: 2 })
@@ -31,6 +31,9 @@ export class Group {
 
   @Column()
   frequency: 'daily' | 'weekly' | 'monthly';
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  blance: number;
+
 
   @Column({ type: 'timestamp' })
 startDate: Date;

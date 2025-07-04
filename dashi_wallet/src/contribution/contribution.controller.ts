@@ -24,7 +24,7 @@ export class ContributionController {
     const amount = body.amount;
      if (!amount) throw new BadRequestException('Amount is required');
     const tx_ref = `dashi-${uuidv4()}`; // generate unique tx_ref
-    const redirect_url = `http://localhost:3000/payment/verify`; // your frontend redirect handler
+    const redirect_url = `http://localhost:3000/payment/verify/${tx_ref}`; // your frontend redirect handler
     
     const paymentLink = await this.paymentService.initiatePayment(
       email,
@@ -36,6 +36,20 @@ export class ContributionController {
     return { link: paymentLink }
   }
 
-  
+  @Post('update')
+  async balanceUpdate(@Body() body:{amount:number}, @Req() req){
+    const user = req.user;
+    const { amount } = body; // assuming AuthGuard attaches user to req
+    if (!user || !user.email) {
+      throw new BadRequestException('User email is required');
+    }
+    const email = user.email;
+    const tx_ref = `dashi-${uuidv4()}`; // generate unique tx_ref
+
+    
+    return await this.paymentService.transaction(amount, tx_ref, email);
+      
+
+  }
 
 }

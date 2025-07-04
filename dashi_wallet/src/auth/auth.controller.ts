@@ -86,6 +86,11 @@ getTest() {
   return 'Hello from test route!';
 }
 
+@Get('users')
+getUsers() {
+  return this.authservice.getAllUsers();
+
+}
 }
 
 

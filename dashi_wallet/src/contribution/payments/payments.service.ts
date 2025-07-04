@@ -40,10 +40,7 @@ export class PaymentsService {
 
     try {
       const response = await this.flw.Charge.bank_transfer(payload);
-
-      
-   return this.transaction(amount, tx_ref=response.transfer_reference, email)
-  
+      return response
     } catch (error) {
       throw new Error(error.message || 'Flutterwave error');
     }
@@ -57,7 +54,7 @@ export class PaymentsService {
       throw new Error('Verification failed');
     }
   }
-  private async transaction(
+   async transaction(
     amount: number,
     ref: string,
     email: string,
@@ -65,25 +62,34 @@ export class PaymentsService {
     try {
        const user = await this.userRepo.findOneBy({ email });
       if (!user) throw new NotFoundException('User not found');
+       
 
-      user.blance += amount;
+      console.log('Processing transaction for user:', user.email);
 
+      user.blance = parseFloat(user.blance as any) + amount;
+ user.blance = Number(user.blance) + Number(amount)
+      console.log('User balance updated:', user.blance);
       await this.userRepo.save(user);
 
       const newtransaction = this.TxRepo.create({
-        amount,
-        type: 'deposit',
-        ref,
-        status: 'successful',
-        email,
+      amount,
+      type: 'deposit',
+      ref,
+      status: 'successful',
+      email,
+      user,
+    });
 
-        user,
-      });
+    await this.TxRepo.save(newtransaction);
+    
 
-      await this.TxRepo.save(newtransaction);
+
+    
       return { message: 'Transaction recorded successfully' };
     } catch (error) {
       throw new InternalServerErrorException('Transaction processing failed');
     }
   }
+
+  
 }

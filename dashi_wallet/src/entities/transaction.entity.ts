@@ -24,7 +24,7 @@ transactionId: string;
   @Column('decimal', { precision: 10, scale: 2 })
   amount: number;
 
-  @Column()
+  @Column({ nullable: true })
   cycle: number;
 
 

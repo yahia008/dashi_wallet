@@ -54,6 +54,12 @@ export class ContributionService {
           });
       
           await this.contributionRepo.save(contribution);
+
+          group.blance = group.blance + amount;
+          await this.groupRepo.save(group);
+
+          user.blance = user.blance - amount;
+          await this.UserRepo.save(user);
       
           return { message: 'Contribution successful' };
         } catch (error) {

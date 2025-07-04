@@ -11,12 +11,24 @@ import { User } from 'src/entities/user.entity';
 import { IsNull, Not, Repository } from 'typeorm';
 import * as crypto from 'crypto';
 import * as bcrypt from 'bcrypt';
+import { NotificationService } from 'src/administration/notification/notification.service';
 
 @Injectable()
 export class GroupService {
-  constructor(@InjectRepository(Group) private groupRepo: Repository<Group>) {}
+  constructor(@InjectRepository(Group) private groupRepo: Repository<Group>,
+              @InjectRepository(User) private userRepo: Repository<User>,
+              private notificationService: NotificationService
+) {}
   async createGroup(user: User, createGroupDto: CreateGroupDto) {
     try {
+
+
+      console.log('User object:', user);
+    console.log('User ID:', user.id);
+    
+    if (!user || !user.id) {
+      throw new Error('Invalid user provided');
+    }
       const existGroup = await this.groupRepo.findOneBy({
         name: createGroupDto.name,
       });
@@ -25,6 +37,8 @@ export class GroupService {
           'Group with that name already exists. Choose another name.',
         );
       }
+
+      
 
       const newGroup = this.groupRepo.create({
         ...createGroupDto,
@@ -36,7 +50,17 @@ export class GroupService {
 
       const savedGroup = await this.groupRepo.save(newGroup);
 
-      return savedGroup;
+      return this.groupRepo.findOne({
+        where: { id: savedGroup.id },
+        relations: ['createdBy'],
+        select:{
+          createdBy: {
+              id: true,
+              email:true,
+              role:true
+          }
+        }
+      });
     } catch (error) {
       throw new Error(error.message || 'Failed to create group');
     }
@@ -47,10 +71,10 @@ export class GroupService {
       where: { id: groupId },
       relations: ['createdBy'],
     });
-
+     
+    
     if (!group) throw new NotFoundException('Group not found');
-    if (group.createdBy.id !== agent.id)
-      throw new ForbiddenException('Not your group');
+    if (group.createdBy.id !== agent.id) throw new ForbiddenException('Not your group');
 
     const token = crypto.randomBytes(32).toString('hex');
     const hashedToken = await bcrypt.hash(token, 10);
@@ -60,7 +84,11 @@ export class GroupService {
 
     await this.groupRepo.save(group);
 
-    return `https://yourapp.com/join-group?token=${token}`;
+    const link = `https://localhost:3000/join-group/${token}`;
+    
+    await this.notificationService.sendInviteEmail(agent.email, group.name, link) 
+
+    return link
   }
 
   async joinGroup(user: User, token: string): Promise<string> {
@@ -106,4 +134,27 @@ export class GroupService {
 
     return 'You have successfully joined the group';
   }
+  // In your GroupService
+async getGroupsByAgent(agentId: number) {
+  try {
+    return await this.groupRepo.find({
+      where: { 
+        createdBy: { id: agentId } 
+      },
+      relations: ['createdBy'],
+      select: {
+        createdBy: {
+          id: true,
+          email: true,
+          role: true,
+          firstName: true,
+          lastName: true
+        }
+      },
+      order: { createdAt: 'DESC' } // Most recent first
+    });
+  } catch (error) {
+    throw new Error('Failed to fetch agent groups');
+  }
+}
 }
