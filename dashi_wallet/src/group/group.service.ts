@@ -15,20 +15,19 @@ import { NotificationService } from 'src/administration/notification/notificatio
 
 @Injectable()
 export class GroupService {
-  constructor(@InjectRepository(Group) private groupRepo: Repository<Group>,
-              @InjectRepository(User) private userRepo: Repository<User>,
-              private notificationService: NotificationService
-) {}
+  constructor(
+    @InjectRepository(Group) private groupRepo: Repository<Group>,
+    @InjectRepository(User) private userRepo: Repository<User>,
+    private notificationService: NotificationService,
+  ) {}
   async createGroup(user: User, createGroupDto: CreateGroupDto) {
     try {
-
-
       console.log('User object:', user);
-    console.log('User ID:', user.id);
-    
-    if (!user || !user.id) {
-      throw new Error('Invalid user provided');
-    }
+      console.log('User ID:', user.id);
+
+      if (!user || !user.id) {
+        throw new Error('Invalid user provided');
+      }
       const existGroup = await this.groupRepo.findOneBy({
         name: createGroupDto.name,
       });
@@ -38,14 +37,12 @@ export class GroupService {
         );
       }
 
-      
-
       const newGroup = this.groupRepo.create({
         ...createGroupDto,
         createdBy: user, // Associate the group with the creator (agent)
         currentCycle: 0, // Initialize cycle
-        status: 'active', 
-        totalcycle:createGroupDto.maxMembers// Set default status
+        status: 'active',
+        totalcycle: createGroupDto.maxMembers, // Set default status
       });
 
       const savedGroup = await this.groupRepo.save(newGroup);
@@ -53,13 +50,13 @@ export class GroupService {
       return this.groupRepo.findOne({
         where: { id: savedGroup.id },
         relations: ['createdBy'],
-        select:{
+        select: {
           createdBy: {
-              id: true,
-              email:true,
-              role:true
-          }
-        }
+            id: true,
+            email: true,
+            role: true,
+          },
+        },
       });
     } catch (error) {
       throw new Error(error.message || 'Failed to create group');
@@ -71,10 +68,10 @@ export class GroupService {
       where: { id: groupId },
       relations: ['createdBy'],
     });
-     
-    
+
     if (!group) throw new NotFoundException('Group not found');
-    if (group.createdBy.id !== agent.id) throw new ForbiddenException('Not your group');
+    if (group.createdBy.id !== agent.id)
+      throw new ForbiddenException('Not your group');
 
     const token = crypto.randomBytes(32).toString('hex');
     const hashedToken = await bcrypt.hash(token, 10);
@@ -85,10 +82,14 @@ export class GroupService {
     await this.groupRepo.save(group);
 
     const link = `https://localhost:3000/join-group/${token}`;
-    
-    await this.notificationService.sendInviteEmail(agent.email, group.name, link) 
 
-    return link
+    await this.notificationService.sendInviteEmail(
+      agent.email,
+      group.name,
+      link,
+    );
+
+    return link;
   }
 
   async joinGroup(user: User, token: string): Promise<string> {
@@ -135,26 +136,73 @@ export class GroupService {
     return 'You have successfully joined the group';
   }
   // In your GroupService
-async getGroupsByAgent(agentId: number) {
-  try {
-    return await this.groupRepo.find({
-      where: { 
-        createdBy: { id: agentId } 
-      },
-      relations: ['createdBy'],
-      select: {
-        createdBy: {
-          id: true,
-          email: true,
-          role: true,
-          firstName: true,
-          lastName: true
-        }
-      },
-      order: { createdAt: 'DESC' } // Most recent first
-    });
-  } catch (error) {
-    throw new Error('Failed to fetch agent groups');
+  async getGroupsByAgent(agentId: number) {
+    try {
+      return await this.groupRepo.find({
+        where: {
+          createdBy: { id: agentId },
+        },
+        relations: ['createdBy'],
+        select: {
+          createdBy: {
+            id: true,
+            email: true,
+            role: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+        order: { createdAt: 'DESC' }, // Most recent first
+      });
+    } catch (error) {
+      throw new Error('Failed to fetch agent groups');
+    }
   }
-}
+
+  async deleteGroup(agent: User, groupId: string) {
+    const group = await this.groupRepo.findOne({
+      where: { id: groupId },
+      relations: ['createdBy'],
+    });
+
+    if (!group) throw new NotFoundException('Group not found');
+    if (group.createdBy.id !== agent.id)
+      throw new ForbiddenException('Not your group');
+
+    // Remove the group
+    await this.groupRepo.remove(group);
+
+    return { message: 'Group deleted successfully' };
+  }
+
+  async removeMember(agent: User, groupId: string, memberId: number) {
+    const group = await this.groupRepo.findOne({
+      where: { id: groupId },
+      relations: ['createdBy', 'members'],
+    });
+
+    if (!group) throw new NotFoundException('Group not found');
+    if (group.createdBy.id !== agent.id)
+      throw new ForbiddenException('Not your group');
+
+    const member = group.members.find((m) => m.id === memberId);
+    if (!member) throw new NotFoundException('Member not found in this group');
+
+    // Remove the member
+    group.members = group.members.filter((m) => m.id !== memberId);
+    await this.groupRepo.save(group);
+
+    return { message: 'Member removed successfully' };
+  }
+  async getGroupById(agent: User, groupId: string) {
+    const group = await this.groupRepo.findOneBy({ id: groupId });
+    if (!group) {
+      throw new NotFoundException('Group not found');
+    }
+
+    if (group.createdBy.id !== agent.id)
+      throw new ForbiddenException('Not your group');
+
+    return group;
+  }
 }

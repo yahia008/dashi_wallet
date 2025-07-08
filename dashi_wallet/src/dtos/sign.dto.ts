@@ -1,5 +1,11 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, Length, Matches  } from 'class-validator';
-
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  Length,
+  Matches,
+} from 'class-validator';
 
 export enum UserRole {
   AGENT = 'agent',
@@ -7,7 +13,6 @@ export enum UserRole {
   USER = 'user',
 }
 export class signUp {
-  
   @IsNotEmpty()
   firstName: string;
 
@@ -15,7 +20,7 @@ export class signUp {
   lastName: string;
 
   @IsNotEmpty()
-  phone:string
+  phone: string;
 
   @IsOptional()
   @IsEnum(UserRole, { message: 'Role must be either agent, admin, or user' })
@@ -32,15 +37,12 @@ export class signUp {
   })
   password: string;
 
-
-
   @IsNotEmpty()
-photo:string
-  
+  photo: string;
 }
 
-export class forgotDto{
+export class forgotDto {
   @IsNotEmpty()
   @IsEmail()
-  email:string
+  email: string;
 }

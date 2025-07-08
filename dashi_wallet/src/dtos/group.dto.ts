@@ -30,7 +30,6 @@ export class CreateGroupDto {
   @IsInt()
   @Min(1, { message: 'maxMembers must be at least 1' })
   maxMembers: number;
- 
 
   @IsNotEmpty()
   @IsDateString()

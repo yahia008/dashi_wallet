@@ -7,8 +7,6 @@ import { Contribution } from 'src/entities/contribution.entitz';
 import { Transaction } from 'src/entities/transaction.entity';
 import { User } from 'src/entities/user.entity';
 
-
-
 @Injectable()
 export class GroupSchedulerService {
   private readonly logger = new Logger(GroupSchedulerService.name);
@@ -20,13 +18,8 @@ export class GroupSchedulerService {
     @InjectRepository(Transaction)
     private readonly TransactionRepo: Repository<Transaction>,
 
-
-     @InjectRepository(User)
+    @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-
-    
-
-
 
     @InjectRepository(Contribution)
     private readonly contributionRepo: Repository<Contribution>,
@@ -61,75 +54,72 @@ export class GroupSchedulerService {
         }
 
         await this.groupRepo.save(group);
-        this.logger.log(`Group "${group.name}" moved to cycle ${group.currentCycle}`);
+        this.logger.log(
+          `Group "${group.name}" moved to cycle ${group.currentCycle}`,
+        );
       }
     }
 
     this.logger.log('✅ Group cycle check complete at 11 PM');
   }
 
-  
-
-async payoutJob() {
-  const groups = await this.groupRepo.find({
-    relations: ['members'],
-  });
-
-  for (const group of groups) {
-    if (group.status !== 'active') continue;
-
-    const contributions = await this.contributionRepo.find({
-      where: {
-        group: { id: group.id },
-        cycle: group.currentCycle,
-        confirmed: true,
-      },
-      relations: ['user'],
+  async payoutJob() {
+    const groups = await this.groupRepo.find({
+      relations: ['members'],
     });
 
-    // Skip if not all members contributed
-    if (contributions.length !== group.members.length) continue;
+    for (const group of groups) {
+      if (group.status !== 'active') continue;
 
-    // Check if payout already done for this cycle
-    const alreadyPaid = await this.TransactionRepo.findOne({
-      where: {
-        group: { id: group.id },
+      const contributions = await this.contributionRepo.find({
+        where: {
+          group: { id: group.id },
+          cycle: group.currentCycle,
+          confirmed: true,
+        },
+        relations: ['user'],
+      });
+
+      // Skip if not all members contributed
+      if (contributions.length !== group.members.length) continue;
+
+      // Check if payout already done for this cycle
+      const alreadyPaid = await this.TransactionRepo.findOne({
+        where: {
+          group: { id: group.id },
+          cycle: group.currentCycle,
+          type: 'payout',
+          status: 'successful',
+        },
+      });
+
+      if (alreadyPaid) continue; // avoid double payout
+
+      // Determine recipient (rotate by member order and cycle number)
+      const payoutIndex = group.currentCycle % group.members.length;
+      const recipient = group.members[payoutIndex];
+
+      // Total contribution amount for the cycle
+      const totalAmount = group.contributionAmount * group.members.length;
+
+      recipient.blance += totalAmount;
+      await this.userRepo.save(recipient);
+
+      // 💾 Save payout transaction
+      await this.TransactionRepo.save({
+        user: recipient,
+        group,
+        amount: totalAmount,
         cycle: group.currentCycle,
         type: 'payout',
         status: 'successful',
-      },
-    });
+        email: recipient.email,
+        description: `Payout for cycle ${group.currentCycle}`,
+      });
 
-    if (alreadyPaid) continue; // avoid double payout
-
-    // Determine recipient (rotate by member order and cycle number)
-    const payoutIndex = group.currentCycle % group.members.length;
-    const recipient = group.members[payoutIndex];
-
-    // Total contribution amount for the cycle
-    const totalAmount = group.contributionAmount * group.members.length;
-
-    recipient.blance += totalAmount;
-    await this.userRepo.save(recipient);
-
-    // 💾 Save payout transaction
-    await this.TransactionRepo.save({
-      user: recipient,
-      group,
-      amount: totalAmount,
-      cycle: group.currentCycle,
-      type: 'payout',
-      status: 'successful',
-      email: recipient.email,
-      description: `Payout for cycle ${group.currentCycle}`,
-    });
-
-    this.logger.log(
-      `✅ Payout of ₦${totalAmount} sent to ${recipient.firstName} for group "${group.name}" in cycle ${group.currentCycle}`
-    );
+      this.logger.log(
+        `✅ Payout of ₦${totalAmount} sent to ${recipient.firstName} for group "${group.name}" in cycle ${group.currentCycle}`,
+      );
+    }
   }
 }
-
-    
- }
-

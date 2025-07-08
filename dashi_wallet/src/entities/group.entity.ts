@@ -34,12 +34,11 @@ export class Group {
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   blance: number;
 
+  @Column({ type: 'timestamp' })
+  startDate: Date;
 
   @Column({ type: 'timestamp' })
-startDate: Date;
-
-@Column({ type: 'timestamp' })
-endDate: Date;
+  endDate: Date;
 
   @Column({ default: 0 })
   currentCycle: number;
@@ -50,8 +49,8 @@ endDate: Date;
   @Column({ default: 'active' })
   status: 'active' | 'completed' | 'cancelled';
 
- @Column({ type: 'text', nullable: true })
-inviteToken: string | null;
+  @Column({ type: 'text', nullable: true })
+  inviteToken: string | null;
 
   @Column({ default: 0 })
   maxMembers: number;
@@ -59,10 +58,8 @@ inviteToken: string | null;
   @Column({ default: 0 })
   totalcycle: number;
 
-
   @Column({ type: 'timestamp', nullable: true })
   inviteExpiresAt: Date | null;
-
 
   @ManyToMany(() => User)
   @JoinTable()

@@ -15,8 +15,7 @@ export class Transaction {
   id: string;
 
   @Column({ nullable: true })
-transactionId: string;
-
+  transactionId: string;
 
   @Column()
   type: 'deposit' | 'contribution' | 'withdrawal' | 'payout';
@@ -26,7 +25,6 @@ transactionId: string;
 
   @Column({ nullable: true })
   cycle: number;
-
 
   @Column()
   status: 'pending' | 'successful' | 'failed';

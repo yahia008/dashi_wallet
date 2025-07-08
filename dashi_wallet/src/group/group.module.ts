@@ -17,7 +17,7 @@ import { AdministrationModule } from 'src/administration/administration.module';
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '60s' },
     }),
-    AdministrationModule
+    AdministrationModule,
   ],
 
   providers: [GroupService],

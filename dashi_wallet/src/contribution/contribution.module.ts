@@ -11,9 +11,10 @@ import { Contribution } from 'src/entities/contribution.entitz';
 import { ContributionController } from './contribution.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Profile, Group, Transaction, Contribution])],
+  imports: [
+    TypeOrmModule.forFeature([User, Profile, Group, Transaction, Contribution]),
+  ],
   providers: [ContributionService, PaymentsService],
   controllers: [ContributionController],
 })
-export class ContributionModule {
-}
+export class ContributionModule {}

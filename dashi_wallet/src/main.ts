@@ -15,7 +15,6 @@ async function bootstrap() {
   );
 
   await app.listen(process.env.PORT ?? 3000);
-   app.use('/contribution/payment/webhook', bodyParser.raw({ type: '*/*' }));
-
+  app.use('/contribution/payment/webhook', bodyParser.raw({ type: '*/*' }));
 }
 bootstrap();

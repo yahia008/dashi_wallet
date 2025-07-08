@@ -13,19 +13,24 @@ import { ConfigModule } from '@nestjs/config';
   imports: [
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
-    type: 'postgres',
-    url: process.env.DATABASE_URL,
-    ssl: true,
-    extra: {
-      ssl: {
-        rejectUnauthorized: false, // Accept Render's self-signed cert
+      type: 'postgres',
+      url: process.env.DATABASE_URL,
+      ssl: true,
+      extra: {
+        ssl: {
+          rejectUnauthorized: false, // Accept Render's self-signed cert
+        },
       },
-    },
-    autoLoadEntities: true,
-    synchronize: true,
-  }), ScheduleModule.forRoot(), AuthModule, GroupModule, ContributionModule, AdministrationModule, ],
+      autoLoadEntities: true,
+      synchronize: true,
+    }),
+    ScheduleModule.forRoot(),
+    AuthModule,
+    GroupModule,
+    ContributionModule,
+    AdministrationModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {
-}
+export class AppModule {}

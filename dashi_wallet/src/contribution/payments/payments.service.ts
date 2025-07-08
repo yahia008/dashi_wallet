@@ -18,10 +18,7 @@ export class PaymentsService {
     @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(Transaction) private TxRepo: Repository<Transaction>,
   ) {
-    this.flw = new Flutterwave(
-      process.env.FLWPUBK,
-      process.env.FLWSECK,
-    );
+    this.flw = new Flutterwave(process.env.FLWPUBK, process.env.FLWSECK);
   }
 
   async initiatePayment(
@@ -40,7 +37,7 @@ export class PaymentsService {
 
     try {
       const response = await this.flw.Charge.bank_transfer(payload);
-      return response
+      return response;
     } catch (error) {
       throw new Error(error.message || 'Flutterwave error');
     }
@@ -54,42 +51,32 @@ export class PaymentsService {
       throw new Error('Verification failed');
     }
   }
-   async transaction(
-    amount: number,
-    ref: string,
-    email: string,
-  ) {
+  async transaction(amount: number, ref: string, email: string) {
     try {
-       const user = await this.userRepo.findOneBy({ email });
+      const user = await this.userRepo.findOneBy({ email });
       if (!user) throw new NotFoundException('User not found');
-       
 
       console.log('Processing transaction for user:', user.email);
 
       user.blance = parseFloat(user.blance as any) + amount;
- user.blance = Number(user.blance) + Number(amount)
+      user.blance = Number(user.blance) + Number(amount);
       console.log('User balance updated:', user.blance);
       await this.userRepo.save(user);
 
       const newtransaction = this.TxRepo.create({
-      amount,
-      type: 'deposit',
-      ref,
-      status: 'successful',
-      email,
-      user,
-    });
+        amount,
+        type: 'deposit',
+        ref,
+        status: 'successful',
+        email,
+        user,
+      });
 
-    await this.TxRepo.save(newtransaction);
-    
+      await this.TxRepo.save(newtransaction);
 
-
-    
       return { message: 'Transaction recorded successfully' };
     } catch (error) {
       throw new InternalServerErrorException('Transaction processing failed');
     }
   }
-
-  
 }

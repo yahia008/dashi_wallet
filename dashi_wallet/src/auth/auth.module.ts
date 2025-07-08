@@ -17,7 +17,7 @@ import { ProfileService } from './profile.service';
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '1h' },
     }),
-    AdministrationModule
+    AdministrationModule,
   ],
   providers: [AuthService, ProfileService],
   controllers: [AuthController],
